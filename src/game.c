@@ -35,8 +35,6 @@ void UnloadAssets() {
     map_free(game.assets.textures);
 }
 
-// TODO add error prints in here:
-
 void CreateImage(const char* name, Image image) {
     map_insert(game.assets.images, name, image);
 }
@@ -46,10 +44,18 @@ void CreateImageFromFile(const char* name, const char* filepath) {
 }
 
 Image GetImage(const char* name) {
+    if (!map_contains(game.assets.images, name)) {
+        TraceLog(LOG_ERROR, "GetImage: Image does not exist");
+        return (Image){};
+    }
     return map_get(game.assets.images, name);
 }
 
 void DeleteImage(const char* name) {
+    if (!map_contains(game.assets.images, name)) {
+        TraceLog(LOG_ERROR, "DeleteImage: Image does not exist");
+        return;
+    }
     map_remove(game.assets.images, name);
 }
 
@@ -62,10 +68,18 @@ void CreateFontFromFile(const char* name, const char* filepath) {
 }
 
 Font GetFont(const char* name) {
+    if (!map_contains(game.assets.fonts, name)) {
+        TraceLog(LOG_ERROR, "GetFont: Font does not exist");
+        return (Font){};
+    }
     return map_get(game.assets.fonts, name);
 }
 
 void DeleteFont(const char* name) {
+    if (!map_contains(game.assets.fonts, name)) {
+        TraceLog(LOG_ERROR, "DeleteFont: Font does not exist");
+        return;
+    }
     map_remove(game.assets.fonts, name);
 }
 
@@ -78,10 +92,18 @@ void CreateTextureFromFile(const char* name, const char* filepath) {
 }
 
 Texture2D GetTexture(const char* name) {
+    if (!map_contains(game.assets.textures, name)) {
+        TraceLog(LOG_ERROR, "GetTexture: Texture does not exist");
+        return (Texture2D){};
+    }
     return map_get(game.assets.textures, name);
 }
 
 void DeleteTexture(const char* name) {
+    if (!map_contains(game.assets.textures, name)) {
+        TraceLog(LOG_ERROR, "DeleteTexture: Texture does not exist");
+        return;
+    }
     map_remove(game.assets.textures, name);
 }
 
@@ -89,7 +111,7 @@ void DeleteTexture(const char* name) {
 
 void LoadScene(SceneType type) {
     if (type == game.current_scene_type) {
-        TraceLog(LOG_ERROR, "Cannot load already loaded scene");
+        TraceLog(LOG_ERROR, "LoadScene: Cannot load already loaded scene");
         return;
     }
 
@@ -119,7 +141,7 @@ Object* CreateObject(ObjectType type) {
         return o;
     }
 
-    TraceLog(LOG_ERROR, "Failed to create object");
+    TraceLog(LOG_ERROR, "CreateObject: Failed to create object");
     return NULL;
 }
 
