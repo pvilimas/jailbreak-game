@@ -2,17 +2,40 @@
 
 // ASSETS
 
+// just init asset manager, doesn't load anything
 void InitAssets() {
     game.assets.images = map_new(Image);
     game.assets.fonts = map_new(Font);
     game.assets.textures = map_new(Texture2D);
 }
 
+// unload asset manager stuff
 void UnloadAssets() {
+
+    map_iter_start(game.assets.images);
+    while (map_iter_has_next(game.assets.images)) {
+        const char* key = map_iter_next_key(game.assets.images);
+        UnloadImage(map_get(game.assets.images, key));
+    }
+
+    map_iter_start(game.assets.fonts);
+    while (map_iter_has_next(game.assets.fonts)) {
+        const char* key = map_iter_next_key(game.assets.fonts);
+        UnloadFont(map_get(game.assets.fonts, key));
+    }
+
+    map_iter_start(game.assets.textures);
+    while (map_iter_has_next(game.assets.textures)) {
+        const char* key = map_iter_next_key(game.assets.textures);
+        UnloadTexture(map_get(game.assets.textures, key));
+    }
+
     map_free(game.assets.images);
     map_free(game.assets.fonts);
     map_free(game.assets.textures);
 }
+
+// TODO add error prints in here:
 
 void CreateImage(const char* name, Image image) {
     map_insert(game.assets.images, name, image);
@@ -124,6 +147,22 @@ void DrawObject(ObjectType type, int id) {
     }
 }
 
+// SPECIFIC
+
+Object* CreateBackgroundObject(Color background_color) {
+    Object* o = CreateObject(OBJ_BACKGROUND);
+    o->background_color = background_color;
+    return o;
+}
+
+Object* CreateImageObject(const char* image_name, Vector2 pos) {
+    Object* o = CreateObject(OBJ_IMAGE);
+    o->image_data.image = GetImage(image_name);
+    o->image_data.texture = LoadTextureFromImage(o->image_data.image);
+    o->image_data.pos = pos;
+    return o;
+}
+
 // MAIN
 
 // init raylib and alloc all memory when starting up
@@ -136,6 +175,7 @@ void Init() {
         game.presets[type] = (Object) {
             .id = -1,
             .is_active = false,
+            .is_auto = true,
             .type = OBJ_NONE,
             .update = NULL,
             .draw = NULL
@@ -145,12 +185,17 @@ void Init() {
             *o = (Object) {
                 .id = -1,
                 .is_active = false,
+                .is_auto = true,
                 .type = OBJ_NONE,
                 .update = NULL,
                 .draw = NULL
             };
         }
     }
+
+    // load assets first then presets
+    InitAssets();
+    LoadAssets();
     InitPresets();
 
     // raylib init
@@ -158,8 +203,8 @@ void Init() {
     InitWindow(800, 600, "Jailbreak");
     SetWindowState(FLAG_VSYNC_HINT || FLAG_WINDOW_RESIZABLE);
 
-    Object* o = CreateObject(OBJ_BACKGROUND);
-    o->background_color = RED;
+    CreateBackgroundObject(RED);
+    CreateImageObject("test", (Vector2){50, 50});
 }
 
 // game's main loop
@@ -217,4 +262,12 @@ void Unpause() {
 
 void DrawBackgroundObjectCallback(Object* this) {
     ClearBackground(this->background_color);
+}
+
+void DrawImageObjectCallback(Object* this) {
+    DrawTextureV(this->image_data.texture, this->image_data.pos, WHITE);
+}
+
+void UnloadImageObjectCallback(Object* this) {
+    UnloadTexture(this->image_data.texture);
 }

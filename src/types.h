@@ -54,13 +54,19 @@ typedef struct Scene {
 
 typedef enum {
     OBJ_BACKGROUND,     // Color
+    OBJ_IMAGE,          // ImageData
     OBJ_PLAYER,         // PlayerObjData
     // ...
     OBJ_TYPE_COUNT,
     OBJ_NONE
 } ObjectType;
 
-typedef struct { int placeholder; } PlayerObjectData;
+typedef struct {
+    Image image;
+    Texture texture;
+    Vector2 pos;
+} ImageData;
+typedef struct { int _; } PlayerObjectData;
 // ...
 
 struct Object;
@@ -68,12 +74,15 @@ typedef void (*ObjectFunc)(struct Object* this);
 typedef struct Object {
     int id;
     bool is_active;
+    bool is_auto; // (default=true) if false, draw/update called manually
     ObjectType type;
     ObjectFunc update;
     ObjectFunc draw;
+    ObjectFunc unload;
     union {
         Color background_color;
         PlayerObjectData player_data;
+        ImageData image_data;
         // ...
     };
 } Object;

@@ -35,8 +35,13 @@ void DeleteObject(ObjectType type, int id);
 void UpdateObject(ObjectType type, int id);
 void DrawObject(ObjectType type, int id);
 
+// specific create functions
+Object* CreateBackgroundObject(Color background_color);
+Object* CreateImageObject(const char* image_name, Vector2 pos);
+
 // presets
 
+void LoadAssets();
 void InitPresets();
 
 // main
@@ -56,8 +61,11 @@ void Unpause();
 
 // end screen
 
-// callback hell
+// callback hell - update, draw, unload for each object type
 
 void DrawBackgroundObjectCallback(Object* this);
+
+void DrawImageObjectCallback(Object* this);
+void UnloadImageObjectCallback(Object* this);
 
 #endif // GAME_H
