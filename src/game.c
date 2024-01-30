@@ -66,7 +66,7 @@ void DeleteTexture(const char* name) {
 
 void LoadScene(SceneType type) {
     if (type == game.current_scene_type) {
-        TraceLog(LOG_ERROR, "Cannot load already loaded scene\n");
+        TraceLog(LOG_ERROR, "Cannot load already loaded scene");
         return;
     }
 
@@ -79,7 +79,8 @@ void LoadScene(SceneType type) {
 
 // OBJECT
 
-int CreateObject(ObjectType type, ObjectFunc update, ObjectFunc draw) {
+Object* CreateObject(ObjectType type) {
+    Object preset = game.presets[type];
     for (int i = 0; i < OBJ_COUNT; i++) {
         Object* o = &game.objects[type][i];
 
@@ -87,17 +88,16 @@ int CreateObject(ObjectType type, ObjectFunc update, ObjectFunc draw) {
             continue;
         }
 
+        *o = preset;
         o->id = i;
         o->is_active = true;
         o->type = type;
-        o->update = update;
-        o->draw = draw;
 
-        return o->id;
+        return o;
     }
 
-    TraceLog(LOG_ERROR, "Failed to create object\n");
-    return -1;
+    TraceLog(LOG_ERROR, "Failed to create object");
+    return NULL;
 }
 
 inline Object* GetObject(ObjectType type, int id) {
@@ -112,11 +112,16 @@ void DeleteObject(ObjectType type, int id) {
 
 void UpdateObject(ObjectType type, int id) {
     Object* o = GetObject(type, id);
-    o->update(o);
+    if (o->is_active && o->update) {
+        o->update(o);
+    }
 }
+
 void DrawObject(ObjectType type, int id) {
     Object* o = GetObject(type, id);
-    o->draw(o);
+    if (o->is_active && o->draw) {
+        o->draw(o);
+    }
 }
 
 // MAIN
@@ -128,6 +133,13 @@ void Init() {
     };
 
     for (int type = 0; type < OBJ_TYPE_COUNT; type++) {
+        game.presets[type] = (Object) {
+            .id = -1,
+            .is_active = false,
+            .type = OBJ_NONE,
+            .update = NULL,
+            .draw = NULL
+        };
         for (int id = 0; id < OBJ_COUNT; id++) {
             Object* o = GetObject(type, id);
             *o = (Object) {
@@ -139,11 +151,15 @@ void Init() {
             };
         }
     }
+    InitPresets();
 
     // raylib init
     SetTraceLogLevel(LOG_WARNING);
     InitWindow(800, 600, "Jailbreak");
     SetWindowState(FLAG_VSYNC_HINT || FLAG_WINDOW_RESIZABLE);
+
+    Object* o = CreateObject(OBJ_BACKGROUND);
+    o->background_color = RED;
 }
 
 // game's main loop
@@ -160,25 +176,16 @@ void Start() {
 void Update() {
     for (int type = 0; type < OBJ_TYPE_COUNT; type++) {
         for (int id = 0; id < OBJ_COUNT; id++) {
-            Object* o = GetObject(type, id);
-            if (o->is_active) {
-                o->update(o);
-            }
+            UpdateObject(type, id);
         }
     }
 }
 
 // draw everything
 void Draw() {
-    // remove later
-    ClearBackground((Color){255, 0, 0, 0});
-
     for (int type = 0; type < OBJ_TYPE_COUNT; type++) {
         for (int id = 0; id < OBJ_COUNT; id++) {
-            Object* o = GetObject(type, id);
-            if (o->is_active) {
-                o->draw(o);
-            }
+            DrawObject(type, id);
         }
     }
 }
@@ -189,6 +196,7 @@ void Quit() {
     CloseWindow();
 
     // free all memory
+    // ...
 }
 
 // PLAYING STATE
@@ -199,4 +207,14 @@ void Pause() {
 
 void Unpause() {
     game.is_paused = false;
+}
+
+// START SCREEN
+
+// END SCREEN
+
+// CALLBACK HELL
+
+void DrawBackgroundObjectCallback(Object* this) {
+    ClearBackground(this->background_color);
 }

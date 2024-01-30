@@ -18,6 +18,12 @@
 #define OBJ_COUNT   1000
 #define SCENE_COUNT 10
 
+#define BREAKPOINT()                \
+    printf("breakpoint @ %s:%d\n",  \
+    (strrchr((__FILE__), '/')       \
+    ? strrchr((__FILE__), '/') + 1  \
+    : (__FILE__)), __LINE__)
+
 // assets
 
 typedef struct {
@@ -32,6 +38,7 @@ typedef enum {
     SCENE_START_SCREEN,
     SCENE_PLAYING,
     SCENE_END_SCREEN,
+    // ...
     SCENE_TYPE_COUNT
 } SceneType;
 
@@ -46,11 +53,15 @@ typedef struct Scene {
 // object
 
 typedef enum {
-    OBJ_PLAYER,
+    OBJ_BACKGROUND,     // Color
+    OBJ_PLAYER,         // PlayerObjData
     // ...
     OBJ_TYPE_COUNT,
     OBJ_NONE
 } ObjectType;
+
+typedef struct { int placeholder; } PlayerObjectData;
+// ...
 
 struct Object;
 typedef void (*ObjectFunc)(struct Object* this);
@@ -60,11 +71,18 @@ typedef struct Object {
     ObjectType type;
     ObjectFunc update;
     ObjectFunc draw;
+    union {
+        Color background_color;
+        PlayerObjectData player_data;
+        // ...
+    };
 } Object;
 
 // game context
 
 typedef struct GameContext {
+    Object presets[OBJ_TYPE_COUNT];
+
     Object objects[OBJ_TYPE_COUNT][OBJ_COUNT];
     Scene scenes[SCENE_COUNT];
 

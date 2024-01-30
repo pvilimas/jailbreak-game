@@ -29,11 +29,15 @@ void LoadScene(SceneType type);
 
 // object
 
-int CreateObject(ObjectType type, ObjectFunc update, ObjectFunc draw);
+Object* CreateObject(ObjectType type);
 Object* GetObject(ObjectType type, int id);
 void DeleteObject(ObjectType type, int id);
 void UpdateObject(ObjectType type, int id);
 void DrawObject(ObjectType type, int id);
+
+// presets
+
+void InitPresets();
 
 // main
 
@@ -51,5 +55,9 @@ void Unpause();
 // start screen
 
 // end screen
+
+// callback hell
+
+void DrawBackgroundObjectCallback(Object* this);
 
 #endif // GAME_H
