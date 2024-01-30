@@ -220,6 +220,9 @@ void Init() {
     LoadAssets();
     InitPresets();
 
+    // init keybinds
+    game.keybinds = map_new(Keybind);
+
     // raylib init
     SetTraceLogLevel(LOG_WARNING);
     InitWindow(800, 600, "Jailbreak");
@@ -263,7 +266,16 @@ void Quit() {
     CloseWindow();
 
     // free all memory
-    // ...
+    UnloadAssets();
+    map_free(game.keybinds);
+    for (int type = 0; type < OBJ_TYPE_COUNT; type++) {
+        for (int id = 0; id < OBJ_COUNT; id++) {
+            Object* o = GetObject(type, id);
+            if (o->unload) {
+                o->unload(o);
+            }
+        }
+    }
 }
 
 // PLAYING STATE

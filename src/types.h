@@ -87,6 +87,20 @@ typedef struct Object {
     };
 } Object;
 
+// input
+
+typedef bool (*KeybindCondition)();
+typedef void (*KeybindCallback)();
+
+typedef struct {
+    bool is_enabled;
+    int key;
+    // if this is not null, will execute keybind if this returns true
+    // can be used to limit key to certain scenes for example
+    KeybindCondition condition;
+    KeybindCallback action;
+} Keybind;
+
 // game context
 
 typedef struct GameContext {
@@ -94,6 +108,8 @@ typedef struct GameContext {
 
     Object objects[OBJ_TYPE_COUNT][OBJ_COUNT];
     Scene scenes[SCENE_COUNT];
+
+    map(Keybind) keybinds;
 
     AssetManager assets;
 

@@ -1,6 +1,13 @@
 #ifndef GAME_H
 #define GAME_H
 
+/*
+    TODO
+    - global timer
+    - timer objects
+    - keybind cooldown_ms
+*/
+
 #include "types.h"
 
 // assets
@@ -38,6 +45,15 @@ void DrawObject(ObjectType type, int id);
 // specific create functions
 Object* CreateBackgroundObject(Color background_color);
 Object* CreateImageObject(const char* image_name, Vector2 pos);
+
+// keybinds
+
+void CreateKeybind(const char* name, int key, KeybindCondition condition,
+    KeybindCallback action);
+Keybind* GetKeybind(const char* name);
+Keybind* DeleteKeybind(const char* name);
+void EnableKeybind(const char* name);
+void DisableKeybind(const char* name);
 
 // presets
 
